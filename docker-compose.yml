@@ -1,0 +1,160 @@
+version: "3.9"
+
+services:
+  # -------------------------------------------------------
+  # Redis – message broker between agent and backend
+  # -------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: nads_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - nads_net
+
+  # -------------------------------------------------------
+  # InfluxDB – time-series storage for traffic statistics
+  # -------------------------------------------------------
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: nads_influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-adminpassword}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG:-nads}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET:-network_traffic}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-mydevtoken}
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nads_net
+
+  # -------------------------------------------------------
+  # PostgreSQL – relational DB for users & alert records
+  # -------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: nads_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nads}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nadspassword}
+      POSTGRES_DB: ${POSTGRES_DB:-nads_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nads}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - nads_net
+
+  # -------------------------------------------------------
+  # Backend – FastAPI + ML inference engine
+  # -------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nads_backend
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-mydevtoken}
+      INFLUXDB_ORG: ${INFLUXDB_ORG:-nads}
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET:-network_traffic}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-nads}:${POSTGRES_PASSWORD:-nadspassword}@postgres:5432/${POSTGRES_DB:-nads_db}
+      SECRET_KEY: ${SECRET_KEY:-changeme_in_production}
+      MODEL_PATH: /app/models/anomaly_model.pkl
+    volumes:
+      - ./ml/models:/app/models:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - nads_net
+
+  # -------------------------------------------------------
+  # Agent – network sniffer (requires host network + root)
+  # -------------------------------------------------------
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    container_name: nads_agent
+    # network_mode: host is needed for raw packet capture
+    # In development you can run the agent directly on your host machine
+    network_mode: host
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    environment:
+      REDIS_URL: redis://localhost:6379
+      INTERFACE: ${CAPTURE_INTERFACE:-eth0}
+      FLOW_TIMEOUT: ${FLOW_TIMEOUT:-30}
+    depends_on:
+      - redis
+    profiles:
+      - agent  # run with: docker-compose --profile agent up
+
+  # -------------------------------------------------------
+  # Frontend – React dashboard
+  # -------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nads_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - nads_net
+
+  # -------------------------------------------------------
+  # Nginx – reverse proxy (optional, used in production)
+  # -------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: nads_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - production
+    networks:
+      - nads_net
+
+volumes:
+  influxdb_data:
+  postgres_data:
+
+networks:
+  nads_net:
+    driver: bridge
