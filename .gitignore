@@ -1,3 +1,4 @@
 # Dataset 
 ml/data/
 ml/models/*.pkl
+ml/models/*.png
