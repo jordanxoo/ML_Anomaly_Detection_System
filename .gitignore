@@ -2,3 +2,8 @@
 ml/data/
 ml/models/*.pkl
 ml/models/*.png
+claude.md
+*.pyc
+*.pyo
+__pycache__/
+.venv/

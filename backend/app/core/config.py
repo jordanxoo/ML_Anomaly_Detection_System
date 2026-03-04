@@ -24,10 +24,10 @@ class Settings(BaseSettings):
     INFLUXDB_BUCKET: str = "network_traffic"
 
   
-    BINARY_MODEL_PATH: str = "ml/models/model_binary.pkl"
-    MULTICLASS_MODEL_PATH: str = "ml/models/model_multiclass.pkl"
+    BINARY_MODEL_PATH: str = "models/model_binary.pkl"
+    MULTICLASS_MODEL_PATH: str = "models/model_multiclass.pkl"
     
-    LABEL_ENCODER_PATH: str = "ml/models/label_encoder.pkl"
+    LABEL_ENCODER_PATH: str = "models/label_encoder.pkl"
 
     ANOMALY_THRESHOLD: float = 0.5  
 

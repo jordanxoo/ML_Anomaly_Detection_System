@@ -96,3 +96,4 @@ class MLService:
             "attack_type" : None
         }
     
+ml_service = MLService()

@@ -28,3 +28,9 @@ class AlertRead(AlertBase):
 class AlertList(BaseModel):
     total: int
     alerts: list[AlertRead]
+
+class PredictResponse(BaseModel):
+    is_anomaly : bool
+    anomaly_score : float
+    confidence : float
+    attack_type : str | None = None
