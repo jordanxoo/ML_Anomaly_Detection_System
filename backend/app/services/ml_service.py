@@ -35,19 +35,26 @@ class MLService:
         self._binary_model = None
         self._multiclass_model = None
         self._label_encoder = None
+        self._feature_columns = None
         self.binary_model_path = Path(settings.BINARY_MODEL_PATH)
         self.multiclass_model_path = Path(settings.MULTICLASS_MODEL_PATH)
         self.label_encoder_path = Path(settings.LABEL_ENCODER_PATH)
+        self._feature_columns_path = Path(settings.FEATURE_COLUMNS_PATH)
         self._threshold = settings.ANOMALY_THRESHOLD
 
     def load(self):
-        if not (self.binary_model_path.exists() and self.label_encoder_path.exists() and self.multiclass_model_path.exists()):
+        if not (self.binary_model_path.exists() and self.label_encoder_path.exists() and self.multiclass_model_path.exists() and self._feature_columns_path.exists()):
             logging.warning("Model file not found at %s - running in stub mode")
             return
         else:
             self._binary_model = joblib.load(self.binary_model_path)
+            logging.info("Binary model loaded")
             self._multiclass_model = joblib.load(self.multiclass_model_path)
+            logging.info("Multiclass model loaded")
             self._label_encoder = joblib.load(self.label_encoder_path)
+            logging.info("Label encoder loaded")
+            self._feature_columns = joblib.load(self._feature_columns_path)
+            logging.info("Feature columns loaded")
             logging.info("ML Model loaded") 
 
     
@@ -72,8 +79,12 @@ class MLService:
     def _extract_features(self, flow: NetworkFlow) -> np.ndarray:
         
         
-        var = [getattr(flow,col, 0.0) for col in FEATURE_COLUMNS]
-        arr = np.asarray(var,dtype=np.float64).reshape(1,21)
+        var = [getattr(flow,col, 0.0) for col in self._feature_columns]
+        arr = np.asarray(var,dtype=np.float64).reshape(1,len(self._feature_columns))
+        logging.info("Features shape: %s, values: %s", arr.shape, arr)
+        logging.info("Feature columns: %s", self._feature_columns)
+        
+        
 
         return arr
 
@@ -86,7 +97,7 @@ class MLService:
         features = self._extract_features(flow)
         class_num = self._multiclass_model.predict(features)
         attack_name = self._label_encoder.inverse_transform(class_num)
-        return attack_name[0]
+        return attack_name[0] if attack_name[0] != "BENIGN" else "Unknown"
     
     def _stub_result(self):
         return {

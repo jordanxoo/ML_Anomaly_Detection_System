@@ -26,10 +26,11 @@ class Settings(BaseSettings):
   
     BINARY_MODEL_PATH: str = "models/model_binary.pkl"
     MULTICLASS_MODEL_PATH: str = "models/model_multiclass.pkl"
-    
     LABEL_ENCODER_PATH: str = "models/label_encoder.pkl"
 
-    ANOMALY_THRESHOLD: float = 0.5  
+    FEATURE_COLUMNS_PATH: str = "models/feature_columns.pkl"
+
+    ANOMALY_THRESHOLD: float = 0.35
 
 
 settings = Settings()
