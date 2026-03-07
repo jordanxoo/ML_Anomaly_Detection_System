@@ -6,6 +6,7 @@ from  app.services.ml_service import ml_service
 from app.core.config import settings
 from app.core.database import engine,Base
 from app.api import alerts, predict
+from app.api import auth
 from app.services.redis_consumer import consume_redis
 import asyncio
 logging.basicConfig(level=logging.DEBUG)
@@ -22,4 +23,4 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(router=alerts.router)
 app.include_router(router=predict.router)
-
+app.include_router(router=auth.router,prefix="/auth")
