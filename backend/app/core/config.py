@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
  
     INFLUXDB_URL: str = "http://localhost:8086"
-    INFLUXDB_TOKEN: str = "mydevtoken"
+    INFLUXDB_TOKEN: str = "9_tGiR4ITDXv4Z7Dg5d71gXiazYtNToo-52_FDdRmqixaZoT_sGW7esKbDoF4_31ljnVUkOSeauOekLlItP-VQ=="
     INFLUXDB_ORG: str = "nads"
     INFLUXDB_BUCKET: str = "network_traffic"
 

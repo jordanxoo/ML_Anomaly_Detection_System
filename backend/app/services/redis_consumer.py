@@ -6,6 +6,7 @@ from app.services.ml_service import ml_service
 from app.core.database import AsyncSessionLocal
 from app.services.alert_service import save_alert
 import logging
+from app.services.influx_serivce import write_flow_metric
 async def consume_redis():
     r = redis.asyncio.Redis.from_url(settings.REDIS_URL)
     pubsub = r.pubsub()
@@ -18,6 +19,7 @@ async def consume_redis():
             msg_dec = json.loads(message["data"].decode("utf-8"))
             network_flow = NetworkFlow.model_validate(msg_dec)
             prediction = ml_service.predict(network_flow)
+            write_flow_metric(network_flow,prediction)
 
             async with AsyncSessionLocal() as db:
                 await save_alert(network_flow,prediction,db)

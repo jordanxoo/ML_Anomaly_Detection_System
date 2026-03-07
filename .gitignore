@@ -7,3 +7,4 @@ claude.md
 *.pyo
 __pycache__/
 .venv/
+.env
