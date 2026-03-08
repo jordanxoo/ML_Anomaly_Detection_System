@@ -1,9 +1,9 @@
-from fastapi import Depends,FastAPI, APIRouter, HTTPException
-from app.schemas.user import UserCreate,UserLogin
+from fastapi import Depends, APIRouter, HTTPException,Request
+from app.schemas.user import UserCreate
 from sqlalchemy import func,select
+from app.core.limiter import limiter
 from app.models.user import User
 from app.schemas.user import UserCreate
-import passlib
 from app.core.security import hash_password, verify_password,create_access_token
 from app.core.database import get_db, AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
@@ -28,8 +28,10 @@ async def user_register(req: UserCreate,db: AsyncSession = Depends(get_db)):
 
     return user_created
 
+
 @router.post("/login")
-async def user_login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def user_login(request: Request,form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     
     user_found = await db.execute(select(User).where(User.username == form.username))
     user_obj = user_found.scalar_one_or_none()
