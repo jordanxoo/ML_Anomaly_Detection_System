@@ -7,14 +7,13 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 1m30s
       timeout: 30s
       retries: 5
       start_period: 30s
     networks:
       - nads_net
-
 
   postgres:
     image: postgres:16-alpine
@@ -26,16 +25,16 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-nads}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nadspassword}
       POSTGRES_DB: ${POSTGRES_DB:-nads_db}
-    
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nads}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nads}" ]
       interval: 1m30s
       timeout: 30s
       retries: 5
       start_period: 30s
     networks:
       - nads_net
-    
+
   influxdb:
     image: influxdb:2.7-alpine
     container_name: nads_influxdb
@@ -53,17 +52,17 @@ services:
       - influxdb_data:/var/lib/influxdb2
 
     healthcheck:
-      test: ["CMD", "influx", "ping"]
+      test: [ "CMD", "influx", "ping" ]
       interval: 1m30s
       timeout: 30s
       retries: 5
       start_period: 30s
-    
+
     networks:
       - nads_net
 
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: backend
@@ -77,7 +76,7 @@ services:
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET:-network_traffic}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-nads}:${POSTGRES_PASSWORD:-nadspassword}@postgres:5432/${POSTGRES_DB:-nads_db}
       SECRET_KEY: ${SECRET_KEY:-changeme_in_production}
-      
+
     volumes:
       - ./ml/models:/app/models:ro
 
@@ -88,13 +87,13 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      
+
     networks:
       - nads_net
-      
-      
+
 networks:
   nads_net:
+
 
 volumes:
   influxdb_data:

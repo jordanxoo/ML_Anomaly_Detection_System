@@ -32,5 +32,7 @@ class Settings(BaseSettings):
 
     ANOMALY_THRESHOLD: float = 0.35
 
+    ALLOWED_ORIGINS: list[str] = ["http://localhost:3000"]
+
 
 settings = Settings()

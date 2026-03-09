@@ -30,6 +30,11 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded,_rate_limit_exceeded_handler)
 app.add_exception_handler(HTTPException,http_exception_handler)
 app.add_exception_handler(Exception,unhandled_exception_handler)
+app.add_middleware(CORSMiddleware,
+                   allow_origins=settings.ALLOWED_ORIGINS,
+                   allow_credentials= True,
+                   allow_methods = ["*"],
+                   allow_headers=["*"])
 app.include_router(router=alerts.router)
 app.include_router(router=predict.router)
 app.include_router(router=auth.router,prefix="/auth")
