@@ -34,3 +34,14 @@ class PredictResponse(BaseModel):
     anomaly_score : float
     confidence : float
     attack_type : str | None = None
+
+
+class Stats(BaseModel):
+    value: str
+    count: int
+
+class AttacksStats(BaseModel):
+    top_src_ips : list[Stats]
+    top_dst_ips: list[Stats]
+    top_attack_types: list[Stats]
+
