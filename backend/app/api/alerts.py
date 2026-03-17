@@ -7,6 +7,7 @@ from app.schemas.alert import AlertList, AlertRead, AttacksStats
 from app.models.user import User
 from app.core.security import get_current_user
 from app.schemas.alert import Stats, AttacksStats
+from datetime import datetime
 router = APIRouter()
 
 @router.get("/",response_model=AlertList)
@@ -18,8 +19,9 @@ async def list_alerts(
     src_ip: str | None = Query(None),
     dst_ip: str | None = Query(None),
     attack_type: str | None = Query(None),
-    protocol: str | None = Query(None)
-
+    protocol: str | None = Query(None),
+    date_from: datetime | None = Query(None),
+    date_to: datetime | None = Query(None)
 ):
     query = select(Alert)
     if src_ip:
@@ -30,6 +32,10 @@ async def list_alerts(
         query = query.where(Alert.attack_type == attack_type)
     if protocol:
         query = query.where(Alert.protocol == protocol)
+    if date_from:
+        query = query.where(Alert.timestamp >= date_from)
+    if date_to:
+        query.where(Alert.timestamp < date_to)
 
     total = await db.scalar(select(func.count()).select_from(query.subquery()))
     result = await db.execute(query.order_by(Alert.timestamp.desc()).offset(skip).limit(limit))

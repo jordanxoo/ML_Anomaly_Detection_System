@@ -41,3 +41,9 @@ pytest-asyncio==0.23.8
 testcontainers[postgres]
 
 psycopg2-binary==2.9.11
+
+aio-pika==9.6.1
+
+ruff==0.15.6
+
+pytest-cov==7.0.0

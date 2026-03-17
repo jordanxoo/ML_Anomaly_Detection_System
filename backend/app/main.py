@@ -13,6 +13,8 @@ from app.api import auth
 from app.services.redis_consumer import consume_redis
 from app.core.exception_handlers import http_exception_handler, unhandled_exception_handler
 import asyncio
+from app.services.rabbitmq_consumer import consume_rabbitmq
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -23,6 +25,7 @@ async def lifespan(app: FastAPI):
 
     ml_service.load()
     asyncio.create_task(consume_redis())
+    asyncio.create_task(consume_rabbitmq())
     yield
 
 app = FastAPI(lifespan=lifespan)

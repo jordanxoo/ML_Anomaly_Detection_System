@@ -2,6 +2,27 @@ version: '3.9'
 
 services:
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: nads_rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-nads}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-nadspassword}
+      
+
+    
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    networks:
+      - nads_net
+
   redis:
     image: redis:7-alpine
     ports:
@@ -76,6 +97,7 @@ services:
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET:-network_traffic}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-nads}:${POSTGRES_PASSWORD:-nadspassword}@postgres:5432/${POSTGRES_DB:-nads_db}
       SECRET_KEY: ${SECRET_KEY:-changeme_in_production}
+      RABBITMQ_URL: amqp://nads:nadspassword@rabbitmq:5672/
 
     volumes:
       - ./ml/models:/app/models:ro
@@ -86,6 +108,8 @@ services:
       influxdb:
         condition: service_healthy
       postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
     networks:

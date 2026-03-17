@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_CHANNEL: str = "network_flows"
 
+    RABBITMQ_URL: str = "amqp://nads:nadspassword@localhost:5672"
+
  
     INFLUXDB_URL: str = "http://localhost:8086"
     INFLUXDB_TOKEN: str = "9_tGiR4ITDXv4Z7Dg5d71gXiazYtNToo-52_FDdRmqixaZoT_sGW7esKbDoF4_31ljnVUkOSeauOekLlItP-VQ=="
