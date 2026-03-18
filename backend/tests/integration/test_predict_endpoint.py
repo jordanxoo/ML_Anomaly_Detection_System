@@ -1,3 +1,4 @@
+import json
 
 async def test_register(client):
     response = await client.post("/auth/register", json={
@@ -5,6 +6,8 @@ async def test_register(client):
         "password": "test",
         "email": "email@test.com"
     })
+
+    print(response.json())
     assert response.status_code == 200
 
 
