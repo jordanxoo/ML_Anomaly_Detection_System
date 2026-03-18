@@ -4,6 +4,7 @@ import logging
 import json
 from app.schemas.flow import NetworkFlow
 from app.services.ml_service import ml_service
+from app.services import alert_service
 from app.services.influx_serivce import write_flow_metric
 from app.services.alert_service import save_alert
 from app.core.database import AsyncSessionLocal
@@ -22,11 +23,12 @@ async def consume_rabbitmq():
             network_flow = NetworkFlow.model_validate(msg_dec)
             prediction = ml_service.predict(network_flow)
             write_flow_metric(network_flow,prediction=prediction)
-            await message.ack()   
-
+         
             async with AsyncSessionLocal() as db:
                 await save_alert(network_flow,prediction,db)
      
+            await message.ack()   
+            
         except Exception as e:
             await message.nack()
             logging.info("Failed to process RABBITMQ message: %s", e)
