@@ -6,7 +6,7 @@ from app.core.database import Base
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from httpx import AsyncClient
 from app.main import app
-
+import os
 
 
 
@@ -17,16 +17,29 @@ def postgres_container():
         yield pg
 
 @pytest.fixture(scope='function')
-async def db_engine(postgres_container):
-    url = postgres_container.get_connection_url()
-    url = url.replace("postgresql+psycopg2","postgresql+asyncpg")
-    engine = create_async_engine(url)
-    
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield engine
+async def db_engine():
+    # url = postgres_container.get_connection_url()
+    # url = url.replace("postgresql+psycopg2","postgresql+asyncpg")
+    # engine = create_async_engine(url)
 
-    await engine.dispose()
+    database_url = os.environ.get("DATABASE_URL")
+
+    if database_url:
+        engine = create_async_engine(database_url)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        yield engine
+        await engine.dispose()
+    else:
+        with PostgresContainer(image="postgres:16") as pg:
+            url = pg.get_connection_url().replace("postgresql+psycopg2","postgresql+asyncpg")
+            engine = create_async_engine(url)
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            yield engine
+            await engine.dispose()
+   
+
 
 @pytest.fixture(scope='function')
 async def db_session(db_engine):

@@ -26,7 +26,7 @@ jobs:
               uses: actions/cache@v4
               with:
                 path: ~/.cache/pip
-                key: ${{ hashFiles('backend/requirements.txt')}}
+                key: ${{matrix.python-version}}-${{ hashFiles('backend/requirements.txt')}}
 
             - name: Install dependecies
               run: pip install -r backend/requirements.txt  
@@ -36,4 +36,55 @@ jobs:
             
             - name: Lint
               run: ruff check backend/app
-       
+    integration_test:
+      runs-on: ubuntu-latest
+      env: 
+        DATABASE_URL: postgresql+asyncpg://nads:nadspassword@localhost:5432/nads_db
+        
+      services:
+        postgres:
+          image: postgres:16-alpine
+          env:
+            POSTGRES_USER: nads
+            POSTGRES_PASSWORD: nadspassword
+            POSTGRES_DB: nads_db
+          ports:
+            - 5432:5432
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --healt-timeout 5s
+            --health-retries 5s
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          
+        - name: Setup
+          uses: actions/setup-python@v5   
+          with:
+            python-version: "3.11"
+
+        - name: Cache
+          uses: actions/cache@v4
+          with:
+            path: ~./cache/pip
+            key: 3.11-${{ hashFiles('backend/requirements.txt')}}
+            
+        - name: Install dependecies
+          run: pip install -r backend/requirements.txt
+        
+        - name: Run Integration tests
+          working-directory: backend
+          run: pytest tests/integration/ --cov=app --cov-report=term-missing
+          
+        - name: Lint
+          run: ruff check backend/app
+
+
+
+          
+
+      
+
+
+
