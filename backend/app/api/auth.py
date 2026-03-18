@@ -1,5 +1,5 @@
 from fastapi import Depends, APIRouter, HTTPException,Request
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate,UserRead
 from sqlalchemy import select
 from app.core.limiter import limiter
 from app.models.user import User
@@ -9,13 +9,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 router = APIRouter()
 
 
-@router.post("/register")
+@router.post("/register", response_model=UserRead)
 async def user_register(req: UserCreate,db: AsyncSession = Depends(get_db)):
     
     user = await db.execute(select(User).where(User.username == req.username))
     user_obj = user.scalar_one_or_none()
+    print(f"SESSION ENGINE: {db.bind}")
 
-    if(user_obj is None):
+    if(user_obj is not None):
         raise HTTPException(400,"User already exsists")
     
     hashed_password = hash_password(req.password)
@@ -24,6 +25,7 @@ async def user_register(req: UserCreate,db: AsyncSession = Depends(get_db)):
     
     db.add(user_created)
     await db.commit()
+    await db.refresh(user_created)
 
     return user_created
 
@@ -34,6 +36,8 @@ async def user_login(request: Request,form: OAuth2PasswordRequestForm = Depends(
     
     user_found = await db.execute(select(User).where(User.username == form.username))
     user_obj = user_found.scalar_one_or_none()
+    print(f"SESSION ENGINE: {db.bind}")
+
     if(user_obj is None):
         raise HTTPException(401,"User not found in DB")
     
