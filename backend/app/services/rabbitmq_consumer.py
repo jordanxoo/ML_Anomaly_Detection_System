@@ -4,7 +4,6 @@ import logging
 import json
 from app.schemas.flow import NetworkFlow
 from app.services.ml_service import ml_service
-from app.services import alert_service
 from app.services.influx_serivce import write_flow_metric
 from app.services.alert_service import save_alert
 from app.core.database import AsyncSessionLocal

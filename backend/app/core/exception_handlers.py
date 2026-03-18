@@ -12,7 +12,7 @@ async def http_exception_handler(request: Request, exc : HTTPException):
 
 async def unhandled_exception_handler(request : Request, exc : Exception):
 
-    if settings.DEBUG == True:
+    if settings.DEBUG:
         detail =str(exc)
         
     else:

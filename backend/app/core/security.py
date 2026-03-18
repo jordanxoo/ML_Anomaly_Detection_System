@@ -12,7 +12,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def hash_password(password : str) -> str:
 
-    if(password != None):
+    if(password is not None):
         hashed = context.hash(password)
         return hashed
     else:
@@ -39,7 +39,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(401, "Invalid token")
     
     username = jwt_token["sub"]
-    if username == None:
+    if username is None:
         raise HTTPException(401,"Username not found")
     
     return username
