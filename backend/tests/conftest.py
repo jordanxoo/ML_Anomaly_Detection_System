@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from httpx import AsyncClient
 from app.main import app
 import os
+from sqlalchemy import text
 
 
 
@@ -47,6 +48,8 @@ async def db_session(db_engine):
     
     async with factory() as sess:
         yield sess
+        await sess.execute(text("TRUNCATE TABLE users, alerts RESTART IDENTITY CASCADE"))
+        await sess.commit()
 
 
 @pytest.fixture
