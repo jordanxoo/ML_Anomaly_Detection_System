@@ -47,3 +47,5 @@ aio-pika==9.6.1
 ruff==0.15.6
 
 pytest-cov==7.0.0
+
+bandit==1.9.4

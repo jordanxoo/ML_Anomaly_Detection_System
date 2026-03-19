@@ -80,6 +80,9 @@ jobs:
         - name: Lint
           run: ruff check backend/app
 
+        - name: Bandit
+          run: bandit -r backend/app -ll
+
 
 
           

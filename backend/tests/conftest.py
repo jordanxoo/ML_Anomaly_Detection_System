@@ -69,5 +69,5 @@ async def client(session_factory):
 
   async with AsyncClient(app=app, base_url="http://test") as c:
     
-    yield c
+        yield c
   app.dependency_overrides.clear()

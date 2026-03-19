@@ -48,7 +48,7 @@ async def user_login(request: Request,form: OAuth2PasswordRequestForm = Depends(
     
 
     jwt = create_access_token({"sub": form.username})
-    return {"access_token":jwt,"token_type":"bearer"}
+    return {"access_token":jwt,"token_type":"bearer"} # nosec B105
 
 
 
