@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    APP_NAME: str = "NADS – Network Anomaly Detection System"
+    APP_NAME: str = "NADS Network Anomaly Detection System"
     DEBUG: bool = True
 
     SECRET_KEY: str = "changeme_in_production"

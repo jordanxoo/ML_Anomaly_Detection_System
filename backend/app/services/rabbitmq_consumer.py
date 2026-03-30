@@ -1,12 +1,14 @@
 import aio_pika
 from app.core.config import settings
-import logging
+import structlog
 import json
 from app.schemas.flow import NetworkFlow
 from app.services.ml_service import ml_service
 from app.services.influx_serivce import write_flow_metric
 from app.services.alert_service import save_alert
 from app.core.database import AsyncSessionLocal
+
+logger = structlog.get_logger()
 
 async def consume_rabbitmq():
 
@@ -16,7 +18,7 @@ async def consume_rabbitmq():
 
     async for message in queue:
         
-        logging.info("raw message: %s", message.body)
+        logger.info("raw message", data = message.body)
         try:
             msg_dec = json.loads(message.body.decode("utf-8"))
             network_flow = NetworkFlow.model_validate(msg_dec)
@@ -30,7 +32,7 @@ async def consume_rabbitmq():
             
         except Exception as e:
             await message.nack()
-            logging.info("Failed to process RABBITMQ message: %s", e)
+            logger.error("Failed to process RABBITMQ message",error = str(e))
         
 
         

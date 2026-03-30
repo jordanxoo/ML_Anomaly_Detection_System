@@ -1,4 +1,4 @@
-import logging
+import structlog
 from pathlib import Path
 import joblib
 import numpy as np
@@ -30,6 +30,8 @@ FEATURE_COLUMNS = [
     "init_win_bytes_bwd"
 ]
 
+logger = structlog.get_logger()
+
 class MLService:
     def __init__(self):
         self._binary_model = None
@@ -44,18 +46,18 @@ class MLService:
 
     def load(self):
         if not (self.binary_model_path.exists() and self.label_encoder_path.exists() and self.multiclass_model_path.exists() and self._feature_columns_path.exists()):
-            logging.warning("Model file not found at %s - running in stub mode")
+            logger.warning("Model file not found - running in stub mode")
             return
         else:
             self._binary_model = joblib.load(self.binary_model_path)
-            logging.info("Binary model loaded")
+            logger.info("Binary model loaded")
             self._multiclass_model = joblib.load(self.multiclass_model_path)
-            logging.info("Multiclass model loaded")
+            logger.info("Multiclass model loaded")
             self._label_encoder = joblib.load(self.label_encoder_path)
-            logging.info("Label encoder loaded")
+            logger.info("Label encoder loaded")
             self._feature_columns = joblib.load(self._feature_columns_path)
-            logging.info("Feature columns loaded")
-            logging.info("ML Model loaded") 
+            logger.info("Feature columns loaded")
+            logger.info("ML Model loaded") 
 
     
     def predict(self,flow : NetworkFlow):
@@ -81,8 +83,8 @@ class MLService:
         
         var = [getattr(flow,col, 0.0) for col in self._feature_columns]
         arr = np.asarray(var,dtype=np.float64).reshape(1,len(self._feature_columns))
-        logging.info("Features shape: %s, values: %s", arr.shape, arr)
-        logging.info("Feature columns: %s", self._feature_columns)
+        logger.info("Features extracted", shape = arr.shape,values = arr.tolist())
+        logger.info("Feature columns",columns = self._feature_columns)
         
         
 

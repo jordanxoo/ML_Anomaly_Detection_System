@@ -6,8 +6,11 @@ from app.services.ml_service import ml_service
 from app.core.database import AsyncSessionLocal
 from app.services.alert_service import save_alert
 import asyncio
-import logging
+import structlog
 from app.services.influx_serivce import write_flow_metric
+
+logger = structlog.get_logger()
+
 async def consume_redis():
     while True:
         try:
@@ -18,7 +21,7 @@ async def consume_redis():
             async for message in pubsub.listen():
                 if message["type"] == "message":
                     try:
-                        logging.info("Raw message: %s", message["data"])                                         
+                        logger.info("Raw message",data =  message["data"])                                         
 
                         msg_dec = json.loads(message["data"].decode("utf-8"))
                         network_flow = NetworkFlow.model_validate(msg_dec)
@@ -28,8 +31,8 @@ async def consume_redis():
                         async with AsyncSessionLocal() as db:
                             await save_alert(network_flow,prediction,db)
                     except Exception as ex:
-                        logging.error("Failed to process message: %s",ex)
+                        logger.error("Failed to process message",error = str(ex))
         except Exception as e:
-            logging.error("Redis consumer error: %s",e)
+            logger.error("Redis consumer error",error = str(e))
             await asyncio.sleep(5)        
         

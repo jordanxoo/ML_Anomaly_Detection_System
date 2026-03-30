@@ -13,9 +13,9 @@ from app.services.redis_consumer import consume_redis
 from app.core.exception_handlers import http_exception_handler, unhandled_exception_handler
 import asyncio
 from app.services.rabbitmq_consumer import consume_rabbitmq
+from app.core.logging import configure_logging
 
-
-logging.basicConfig(level=logging.DEBUG)
+configure_logging(debug=settings.DEBUG)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
