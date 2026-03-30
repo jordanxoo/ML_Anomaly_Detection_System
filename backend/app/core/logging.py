@@ -4,7 +4,6 @@ import logging
 def configure_logging(debug: bool = False):
     shared_processors = [
         structlog.stdlib.add_log_level,
-        structlog.stdlib.add_logger_name,
         structlog.processors.TimeStamper(fmt="iso"),
     ]
 
@@ -21,4 +20,3 @@ def configure_logging(debug: bool = False):
         logger_factory=structlog.PrintLoggerFactory(),
     )
 
-    
