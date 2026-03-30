@@ -1,5 +1,4 @@
 import structlog
-import logging
 
 def configure_logging(debug: bool = False):
     shared_processors = [

@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-import logging
 from fastapi import FastAPI, HTTPException
 from slowapi import _rate_limit_exceeded_handler
 from app.core.limiter import limiter
