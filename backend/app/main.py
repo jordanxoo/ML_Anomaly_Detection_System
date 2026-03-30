@@ -7,7 +7,6 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.middleware.cors import CORSMiddleware
 from  app.services.ml_service import ml_service
 from app.core.config import settings
-from app.core.database import engine,Base
 from app.api import alerts, predict
 from app.api import auth
 from app.services.redis_consumer import consume_redis
@@ -20,9 +19,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     ml_service.load()
     asyncio.create_task(consume_redis())
     asyncio.create_task(consume_rabbitmq())
