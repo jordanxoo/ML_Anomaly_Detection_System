@@ -2,15 +2,15 @@ import sys
 import os
 import asyncio
 from datetime import datetime, timedelta, timezone # <-- DODANO timezone
+# 2. Importy aplikacji
+from app.core.database import AsyncSessionLocal 
+from app.models.alert import Alert
 
 # 1. Konfiguracja ścieżek
 current_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.dirname(current_dir)
 sys.path.append(backend_dir)
 
-# 2. Importy aplikacji
-from app.core.database import AsyncSessionLocal 
-from app.models.alert import Alert
 
 async def seed_alerts():
     # Użycie timezone.utc działa w każdej współczesnej wersji Pythona (3.8+)

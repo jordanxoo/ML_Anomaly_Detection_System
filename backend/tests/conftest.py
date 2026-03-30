@@ -1,6 +1,5 @@
 from testcontainers.postgres import PostgresContainer
 import pytest
-from app.core.config import settings
 from sqlalchemy.ext.asyncio import create_async_engine
 from app.core.database import Base
 from sqlalchemy.ext.asyncio import async_sessionmaker

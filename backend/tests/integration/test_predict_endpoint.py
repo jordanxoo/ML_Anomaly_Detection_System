@@ -1,4 +1,3 @@
-import json
 
 async def test_register(client):
     response = await client.post("/auth/register", json={
