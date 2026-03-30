@@ -13,9 +13,11 @@ class Settings(BaseSettings):
  
     DATABASE_URL: str = "postgresql+asyncpg://nads:nadspassword@localhost:5432/nads_db"
 
- 
+    
+
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_CHANNEL: str = "network_flows"
+    CACHE_TTL: int = 300
 
     RABBITMQ_URL: str = "amqp://nads:nadspassword@localhost:5672"
 

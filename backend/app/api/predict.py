@@ -8,8 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import get_current_user
 from app.services.influx_serivce import write_flow_metric
 from app.core.limiter import limiter
+from app.core.redis_client import redis_client
+import json
+from app.core.config import settings
 router = APIRouter()
-
 @router.post("/predict",response_model=PredictResponse)
 @limiter.limit("20/minute")
 async def get_predict(request: Request,
@@ -17,7 +19,16 @@ async def get_predict(request: Request,
                       db: AsyncSession = Depends(get_db),
                       user: str = Depends(get_current_user)):
 
+        cache_key = (f"predict:{flow.src_ip}:{flow.dst_ip}:"
+        f"{flow.src_port}:{flow.dst_port}:{flow.protocol}")
+
+        cached = await redis_client.get(cache_key)
+
+        if cached:
+                return json.loads(cached)
+
         res = ml_service.predict(flow)
+        await redis_client.set(cache_key,json.dumps(res),ex=settings.CACHE_TTL)
         await save_alert(flow,res,db)
         write_flow_metric(flow,res)
         return res

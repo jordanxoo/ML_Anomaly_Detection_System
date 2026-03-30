@@ -16,6 +16,6 @@ def write_flow_metric(flow: NetworkFlow,prediction: dict):
     .field("dst_port", flow.dst_port) \
     .tag("protocol", flow.protocol) \
     .field("anomaly_score", prediction["anomaly_score"]) \
-    .field("is_anomaly", prediction["is_anomaly"])
+    .field("is_anomaly", float(prediction["is_anomaly"]))
 
     api.write(bucket=settings.INFLUXDB_BUCKET,org = settings.INFLUXDB_ORG,record=point)
