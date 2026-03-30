@@ -15,6 +15,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Application code
 COPY app/ ./app/
 
+#copy alembic
+COPY alembic.ini .
+COPY migrations/ ./migrations/
+
 # Models directory (mounted as volume from ./ml/models)
 RUN mkdir -p /app/models
 

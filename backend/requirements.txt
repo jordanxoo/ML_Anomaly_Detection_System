@@ -53,3 +53,5 @@ bandit==1.9.4
 alembic==1.13.3
 
 structlog==25.5.0
+
+prometheus-fastapi-instrumentator==7.1.0

@@ -37,7 +37,7 @@ def run_migrations_offline() -> None:
 
     This configures the context with just a URL
     and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
+    here as well.  By skipping the En   gine creation
     we don't even need a DBAPI to be available.
 
     Calls to context.execute() here emit the given string to the
@@ -57,7 +57,8 @@ def run_migrations_offline() -> None:
 
 def run_migrations(connection):
     context.configure(connection=connection,target_metadata=target_metadata)
-    context.run_migrations()
+    with context.begin_transaction():
+        context.run_migrations()
 
 
 
@@ -68,6 +69,7 @@ def run_migrations_online() -> None:
                                                poolclass=pool.NullPool,)
         async with connectable.connect() as connection:
             await connection.run_sync(run_migrations)
+            await connection.commit()
         await connectable.dispose()
 
     asyncio.run(run_async_migrations())

@@ -7,7 +7,7 @@ from app.services.ml_service import ml_service
 from app.services.influx_serivce import write_flow_metric
 from app.services.alert_service import save_alert
 from app.core.database import AsyncSessionLocal
-
+from app.api.websocket import manager
 logger = structlog.get_logger()
 
 async def consume_rabbitmq():
@@ -27,7 +27,14 @@ async def consume_rabbitmq():
          
             async with AsyncSessionLocal() as db:
                 await save_alert(network_flow,prediction,db)
-     
+                if prediction["is_anomaly"]:
+                    await manager.broadcast(json.dumps({
+                        "src_ip": network_flow.src_ip,
+                        "dst_ip": network_flow.dst_ip,
+                        "attack_type": prediction["attack_type"],
+                        "anomaly_score":prediction["anomaly_score"]
+                    }))
+        
             await message.ack()   
             
         except Exception as e:

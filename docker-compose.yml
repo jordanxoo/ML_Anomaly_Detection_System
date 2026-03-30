@@ -81,6 +81,25 @@ services:
 
     networks:
       - nads_net
+  
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+    
+    networks:
+      - nads_net
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+
+    networks:
+      - nads_net
 
   backend:
     build:
