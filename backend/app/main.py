@@ -37,7 +37,7 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"])
 
 Instrumentator().instrument(app).expose(app)
-app.include_router(router=alerts.router)
+app.include_router(router=alerts.router, prefix="/alerts")
 app.include_router(router=predict.router)
 app.include_router(router=auth.router,prefix="/auth")
 app.include_router(router=websocket.router)
